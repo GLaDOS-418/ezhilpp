@@ -1,6 +1,6 @@
 # EzhilPP
 
-Clean and minimal personal blog and portfolio theme for Hugo.
+Clean and minimal personal blog and portfolio theme for Hugo. Forked from [Ezhil](https://github.com/vividvilla/ezhil).
 
 ## Demo
 
@@ -12,21 +12,25 @@ Clean and minimal personal blog and portfolio theme for Hugo.
 ## Features
 
 * Clean and minimal
-* Dark mode (Auto detect from OS)
+* Dark mode (auto-detect from OS + manual toggle with persistence)
 * Responsive
-* Supports tags
+* Supports tags (with bordered pills and post count)
 * Social media links
 * Google Analytics integration
 * Syntax highlighting
 * Twitter cards and opengraph tags support
-* Disqus comments
+* Disqus and Giscus comments
 * Hugo RSS feeds
 * Custom CSS/JS
-* Giscus comments
 * Social media sharing buttons
-* Default `og:image` and `twitter:image` values.
-* MermaidJS support
-* `pan-and-zoom` SVG generated from MermaidJS
+* Default `og:image` and `twitter:image` values
+* MermaidJS diagram support with pan-and-zoom
+* **Logs section** - separate content type for short-form posts (TIL, notes, etc.)
+* **Reading time** display on posts and logs
+* **Last updated date** shown when content has been modified
+* **Sticky header** with bottom border
+* **Sticky heading breadcrumb trail** on post/log pages (tracks h2/h3 hierarchy)
+* **Sticky footer** pushed to viewport bottom on short pages
 
 ## Installation
 
@@ -72,6 +76,9 @@ summaryLength = 20
     # Content types which are included in home page recent posts list.
     mainSections = ["posts"]
 
+    # Number of recent logs to show on the homepage (Optional). Defaults to 5.
+    # logsOnHomepage = 5
+
     # Content types which are excludes Disqus comments.
     disableCommentsTypes = ["page"]
     commentsApp = "giscus"
@@ -83,8 +90,9 @@ summaryLength = 20
     favicon = "icons/myicon.png"
 
     # Switch to dark mode or auto detect mode from OS (Optional).
-    # "dark" will set mode to dark and "auto" will switch to dark mode if OS is in dark mode.
-    mode = "dark" # "dark" or "auto"
+    # "auto" will follow OS preference, user can toggle manually (persisted in localStorage).
+    # "dark" will force dark mode.
+    mode = "auto" # "dark" or "auto"
 
     # Custom CSS added to default styles. Files added to `static` folder is copied as it is to
     # root by Hugo. For example if you have custom CSS file under `static/css/custom.css` then
@@ -113,14 +121,19 @@ url = "/posts"
 weight = 2
 
 [[menu.main]]
+name = "Logs"
+url = "/logs"
+weight = 3
+
+[[menu.main]]
 name = "About"
 url = "/about"
-weight = 3
+weight = 4
 
 [[menu.main]]
 name = "Tags"
 url = "/tags"
-weight = 4
+weight = 5
 
 # Social media links which shows up on site header.
 # Uses feather icons for icons. You can [search icon names from here](https://feathericons.com/).
@@ -190,13 +203,14 @@ This is a content without comments.
 You can also disable comments for certain content types by using site param `disableCommentsTypes`. You can check config section above for example.
 
 ## Social Media Sharing Buttons
-check this repo for more information
-https://github.com/Stals/hugo-share-buttons
 
-## default `og:image` and `twitter:image` attributes for `<meta>` tags
-If no `ogImage` or `twitterImage` tag is defined, the values fallback to the `featureImage` param from `config.toml`.
+See [hugo-share-buttons](https://github.com/Stals/hugo-share-buttons) for more information.
 
-read [this](https://www.freecodecamp.org/news/what-is-open-graph-and-how-can-i-use-it-for-my-website/) for more information on `og:image`.
+## Default `og:image` and `twitter:image`
+
+If no `ogImage` or `twitterImage` tag is defined in the front-matter, the values fallback to the `featureImage` param from the site config.
+
+See [this article](https://www.freecodecamp.org/news/what-is-open-graph-and-how-can-i-use-it-for-my-website/) for more information on `og:image`.
 
 ## Sample front-matter of a page
 ``` md
@@ -247,17 +261,73 @@ Here's how the above will look:
 ![mermaidjs-stateDiagram-screenshot](images/screenshot-mermaidjs-stateDiagram.png "sample mermaidjs statediagram")
 
 ## NOTE
-- `<base>` tag is removed to fix the jump anchor links. see this issue: [#urls doesn&#39;t work with base href · Issue #811 · gohugoio/hugo · GitHub]( https://github.com/gohugoio/hugo/issues/811 )
-- removing `<base>` breaks the image links so, `render-image` hook is added to canonicalise the image link and fix the above issue.
+- `<base>` tag is removed to fix the jump anchor links. See this issue: [#urls doesn't work with base href - Issue #811](https://github.com/gohugoio/hugo/issues/811)
+- Removing `<base>` breaks the image links so a `render-image` hook is added to canonicalise the image link and fix the above issue.
+- A `render-link` hook is **not** required since Hugo resolves internal links correctly via `.RelPermalink`. Only raw relative `.md` links (e.g. Obsidian-style `[text](other-post.md)`) would break, and those should be avoided in Hugo content.
 
-## TODO
-- similar to `render-image` hook, a `render-link` might also be required. study the impact of removing `<base>` tag.
+## Logs Section
+
+The theme supports a separate "Logs" content type for short-form posts (TIL, notes, snippets, etc.). Logs have their own list/single templates and appear in a dedicated "Recent logs" section on the homepage.
+
+### Setup
+
+1. Create `content/logs/` in your site
+2. Add a menu entry in your site config:
+```toml
+[[menu.main]]
+name = "Logs"
+url = "/logs"
+weight = 3
+```
+3. Create log entries using the archetype:
+```sh
+hugo new logs/my-first-log.md
+```
+
+### Front-matter
+
+```md
+---
+title: "Something I learned today"
+date: 2024-01-01
+description: "A short description shown on the list page"
+tags:
+  - cpp
+draft: false
+socialshare: true
+---
+```
+
+The homepage shows the latest 5 logs by default. Configure via `logsOnHomepage` param:
+```toml
+[params]
+    logsOnHomepage = 10
+```
+
+Hugo auto-generates a separate RSS feed at `/logs/index.xml`. Tags are shared across posts and logs.
+
+## Dark Mode Toggle
+
+When `mode = "auto"`, the theme follows the OS color scheme preference on first visit. A toggle button (moon/sun icon) appears in the navigation bar, allowing users to manually switch between dark and light mode. The preference is persisted in `localStorage`.
+
+The toggle cycles between dark and light. To reset to system default, clear `localStorage` or use browser devtools.
+
+## Heading Breadcrumb Trail
+
+On single post and log pages, a sticky breadcrumb trail appears below the header as you scroll. It tracks the current `h2`/`h3` heading hierarchy, showing the trail like:
+
+```
+Section > Subsection
+```
+
+Each breadcrumb item is clickable to jump to that heading. The trail disappears when scrolled back to the top.
 
 ## Credits
 
+* [Ezhil](https://github.com/vividvilla/ezhil) - the original theme by Vivek R
 * [Feather Icons](https://feathericons.com/) - for icons
-* [Zen habits](https://zenhabits.net/) for demo content
-* [giscus]( https://giscus.app/ ) - for comments
-* [MermaidJS]( https://mermaid.js.org/) - for diagrams
-* [Stals/hugo-share-buttons]( https://github.com/Stals/hugo-share-buttons ) - for social media share buttons
-* [bumbu/svg-pan-zoom]( https://github.com/bumbu/svg-pan-zoom ) - for pan-and-zoom of mermaidjs diagrams
+* [Zen habits](https://zenhabits.net/) - for demo content
+* [Giscus](https://giscus.app/) - for comments
+* [MermaidJS](https://mermaid.js.org/) - for diagrams
+* [hugo-share-buttons](https://github.com/Stals/hugo-share-buttons) - for social media share buttons
+* [svg-pan-zoom](https://github.com/bumbu/svg-pan-zoom) - for pan-and-zoom of MermaidJS diagrams
