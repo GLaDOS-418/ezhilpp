@@ -21,6 +21,13 @@
         <a href="{{ .URL }}">{{ .Name }}</a>
       </li>
       {{ end }}
+      {{- if or (eq .Site.Params.mode "auto") (eq .Site.Params.mode "dark") }}
+      <li>
+        <button id="dark-mode-toggle" class="dark-mode-toggle" title="Toggle dark mode">
+          <i data-feather="moon"></i>
+        </button>
+      </li>
+      {{- end }}
     </ul>
   </nav>
 </div>

@@ -9,7 +9,7 @@
     {{ if isset .Data "Term" }}
       <h1>Entries tagged - "{{ .Data.Term }}"</h1>
     {{ else }}
-      <h1 class="page-title">all posts</h1>
+      <h1 class="page-title">{{ with .Title }}{{ lower . }}{{ else }}all {{ .Section }}{{ end }}</h1>
     {{ end }}
 
     {{ with .Content }}{{ . }}{{ end }}

@@ -1,9 +1,17 @@
+html {
+    background-color: #fff;
+}
+
 body {
     font-family: "Source Code Pro";
     font-weight: 400;
     color: #333;
+    background-color: #fff;
     line-height: 1.6;
     font-size: 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 a, a:hover {
@@ -133,6 +141,7 @@ h6 {
 
 .container {
     max-width: 800px;
+    flex: 1;
 }
 
 ul {
@@ -216,6 +225,11 @@ code {
 .header {
     margin-bottom: 20px;
     padding-bottom: 20px;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 100;
+    border-bottom: 1px solid #e8e8e8;
 }
 
 .header h1,
@@ -283,6 +297,42 @@ code {
     margin-bottom: 30px;
 }
 
+.recent-logs .posts .log-entry {
+    margin-bottom: 18px;
+}
+
+.recent-logs .posts .log-entry .description {
+    font-size: 0.9em;
+}
+
+.view-all {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.view-all:hover {
+    color: #a00;
+}
+
+.dark-mode-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #333;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+
+.dark-mode-toggle svg {
+    width: 16px;
+    height: 16px;
+}
+
 .recent-posts .posts .post .meta,
 .post .post-header .meta,
 .list .posts .post .meta {
@@ -345,7 +395,7 @@ code {
     color: #999;
     border-top: 1px solid #f4f4f4;
     padding: 20px 0;
-    margin-top: 40px;
+    margin-top: auto;
 }
 
 .page-title {
@@ -354,10 +404,33 @@ code {
 
 .tag-cloud {
     margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .tag-cloud a {
-    margin-right: 15px;
+    display: inline-block;
+    border: 1px solid #a00;
+    border-radius: 4px;
+    padding: 4px 10px;
+    color: #a00;
+    font-size: 0.85rem;
+    text-decoration: none;
+    line-height: 1.4;
+    margin-right: 0;
+}
+
+.tag-cloud a:hover {
+    background-color: #a00;
+    color: #fff;
+    text-decoration: none;
+}
+
+.tag-cloud .tag-count {
+    font-size: 0.75rem;
+    color: #999;
+    margin-left: 4px;
 }
 
 .pagination {
@@ -421,4 +494,45 @@ table th, table td {
     .container {
         margin-top: 10px;
     }
+}
+
+/* Sticky heading breadcrumb trail */
+.heading-trail {
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    background-color: #fff;
+    font-family: raleway, sans-serif;
+    font-size: 0.8rem;
+    color: #666;
+    padding: 6px 0;
+    border-bottom: 1px solid #e8e8e8;
+    display: none;
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.heading-trail.visible {
+    display: block;
+}
+
+.heading-trail .trail-separator {
+    margin: 0 6px;
+    color: #ccc;
+}
+
+.heading-trail .trail-item {
+    cursor: pointer;
+    color: #666;
+    text-decoration: none;
+}
+
+.heading-trail .trail-item:hover {
+    color: #a00;
+    text-decoration: underline;
+}
+
+.heading-trail .trail-item:last-child {
+    color: #333;
+    font-weight: 600;
 }

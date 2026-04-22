@@ -1,3 +1,7 @@
+html {
+	background-color: #000;
+}
+
 body {
 	color: #ddd;
 	background-color: #000;
@@ -45,9 +49,50 @@ a:hover {
 	color: #ddd;
 }
 
+.tag-cloud a {
+    border-color: #ddd;
+    color: #ddd;
+}
+
+.tag-cloud a:hover {
+    background-color: #ddd;
+    color: #000;
+}
+
+.tag-cloud .tag-count {
+    color: #777;
+}
+
 .site-title a {
 	color: #ddd;
 	text-decoration: none !important;
+}
+
+.header {
+	background-color: #000;
+	border-bottom-color: #333;
+}
+
+.heading-trail {
+	background-color: #000;
+	color: #999;
+	border-bottom-color: #333;
+}
+
+.heading-trail .trail-item {
+	color: #999;
+}
+
+.heading-trail .trail-item:hover {
+	color: #ff7979;
+}
+
+.heading-trail .trail-item:last-child {
+	color: #ddd;
+}
+
+.heading-trail .trail-separator {
+	color: #555;
 }
 
 .header nav,
@@ -80,3 +125,102 @@ p code, li code, table th code, table td code {
 code {
   font-family: "IBM Plex Mono";
 }
+
+.view-all {
+    color: #777;
+}
+
+.view-all:hover {
+    color: #ff7979;
+}
+
+.dark-mode-toggle {
+    color: #ddd;
+}
+
+/* Manual dark mode toggle override: applied when user explicitly selects dark */
+html[data-theme="dark"] { background-color: #000; }
+html[data-theme="dark"] body { color: #ddd; background-color: #000; }
+html[data-theme="dark"] .header { background-color: #000; border-bottom-color: #333; }
+html[data-theme="dark"] .heading-trail { background-color: #000; color: #999; border-bottom-color: #333; }
+html[data-theme="dark"] .heading-trail .trail-item { color: #999; }
+html[data-theme="dark"] .heading-trail .trail-item:hover { color: #ff7979; }
+html[data-theme="dark"] .heading-trail .trail-item:last-child { color: #ddd; }
+html[data-theme="dark"] .heading-trail .trail-separator { color: #555; }
+html[data-theme="dark"] ::-moz-selection { background: #666; text-shadow: none; }
+html[data-theme="dark"] ::selection { background: #666; text-shadow: none; }
+html[data-theme="dark"] hr { border-color: #333; }
+html[data-theme="dark"] blockquote { border-color: #ddd; }
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6 { color: #ddd; }
+html[data-theme="dark"] a,
+html[data-theme="dark"] a:hover { color: #ff7979; text-decoration: none; }
+html[data-theme="dark"] .site-description a,
+html[data-theme="dark"] .site-description a:hover { color: #ddd; text-decoration: underline; }
+html[data-theme="dark"] a:hover { opacity: 0.8; }
+html[data-theme="dark"] .post-tags .tags a { border: 1px solid #ddd; color: #ddd; }
+html[data-theme="dark"] .tag-cloud a { border-color: #ddd; color: #ddd; }
+html[data-theme="dark"] .tag-cloud a:hover { background-color: #ddd; color: #000; }
+html[data-theme="dark"] .tag-cloud .tag-count { color: #777; }
+html[data-theme="dark"] .site-title a { color: #ddd; text-decoration: none !important; }
+html[data-theme="dark"] .header nav,
+html[data-theme="dark"] .footer { border-color: #333; }
+html[data-theme="dark"] .highlight { background-color: #333; }
+html[data-theme="dark"] table th { background-color: #333; }
+html[data-theme="dark"] table th,
+html[data-theme="dark"] table td { padding: 10px 20px; border: 1px solid #666; }
+html[data-theme="dark"] p code,
+html[data-theme="dark"] li code,
+html[data-theme="dark"] table th code,
+html[data-theme="dark"] table td code { background: #3A3A3A; }
+html[data-theme="dark"] .view-all { color: #777; }
+html[data-theme="dark"] .view-all:hover { color: #ff7979; }
+html[data-theme="dark"] .dark-mode-toggle { color: #ddd; }
+
+/* Manual light mode override: force light when user explicitly selects light, even if OS is dark */
+html[data-theme="light"] { background-color: #fff; }
+html[data-theme="light"] body { color: #333; background-color: #fff; }
+html[data-theme="light"] .header { background-color: #fff; border-bottom-color: #e8e8e8; }
+html[data-theme="light"] .heading-trail { background-color: #fff; color: #666; border-bottom-color: #e8e8e8; }
+html[data-theme="light"] .heading-trail .trail-item { color: #666; }
+html[data-theme="light"] .heading-trail .trail-item:hover { color: #a00; }
+html[data-theme="light"] .heading-trail .trail-item:last-child { color: #333; }
+html[data-theme="light"] .heading-trail .trail-separator { color: #ccc; }
+html[data-theme="light"] h1,
+html[data-theme="light"] h2,
+html[data-theme="light"] h3,
+html[data-theme="light"] h4,
+html[data-theme="light"] h5,
+html[data-theme="light"] h6 { color: #333; }
+html[data-theme="light"] a,
+html[data-theme="light"] a:hover { color: #a00; }
+html[data-theme="light"] .site-title a { color: #333; }
+html[data-theme="light"] .site-description a,
+html[data-theme="light"] .site-description a:hover { color: #333; }
+html[data-theme="light"] .header nav,
+html[data-theme="light"] .footer { border-color: #f4f4f4; }
+html[data-theme="light"] .highlight { background-color: #FAFAFA; }
+html[data-theme="light"] table th { background-color: #f4f4f4; }
+html[data-theme="light"] table th,
+html[data-theme="light"] table td { border: 1px solid #dddddd; }
+html[data-theme="light"] p code,
+html[data-theme="light"] li code,
+html[data-theme="light"] table th code,
+html[data-theme="light"] table td code { background: #f3f3f3; }
+html[data-theme="light"] hr { border-color: #ccc; }
+html[data-theme="light"] blockquote { border-color: #a00; }
+html[data-theme="light"] ::selection { background: #b3d4fc; }
+html[data-theme="light"] .dark-mode-toggle { color: #333; }
+html[data-theme="light"] .view-all { color: #999; }
+html[data-theme="light"] .view-all:hover { color: #a00; }
+html[data-theme="light"] .post-tags .tags a { border: 1px solid #a00; color: #a00; }
+html[data-theme="light"] .tag-cloud a { border-color: #a00; color: #a00; }
+html[data-theme="light"] .tag-cloud a:hover { background-color: #a00; color: #fff; }
+html[data-theme="light"] .tag-cloud .tag-count { color: #999; }
+html[data-theme="light"] .tag-cloud a { border-color: #a00; color: #a00; }
+html[data-theme="light"] .tag-cloud a:hover { background-color: #a00; color: #fff; }
+html[data-theme="light"] .tag-cloud .tag-count { color: #999; }
