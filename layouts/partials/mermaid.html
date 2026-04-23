@@ -1,28 +1,298 @@
+{{/* ==========================================================================
+   mermaid.html -- Mermaid diagram renderer (loaded conditionally)
+   
+   Only included when the page has mermaid code blocks (hasMermaid flag set
+   by render-codeblock-mermaid.html). Loads:
+   - svg-pan-zoom for zoom/pan controls on rendered diagrams
+   - Mermaid v11 via ESM CDN import
+   
+   Features:
+   - Theme-aware: uses 'dark' theme in dark mode, 'default' in light mode.
+     Re-renders all diagrams when the user toggles the theme (listens for
+     the 'theme-changed' custom event dispatched by main.js).
+   - Hand-drawn sketch style via look: 'handDrawn' with fixed seed.
+   - After each diagram renders, wires up the "Copy Image" and "Fullscreen"
+     buttons that main.js pre-created in the toolbar (initially hidden).
+   ========================================================================== */}}
 {{ if .Page.Store.Get "hasMermaid" }}
 <script src="https://bumbu.me/svg-pan-zoom/dist/svg-pan-zoom.js"></script>
 <script type="module">
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-      let config = { startOnLoad: false,
-                    theme: 'forest',
-                    flowchart: { useMaxWidth: false, htmlLabels: true }
-                   };
-      mermaid.initialize(config);
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
-      const drawDiagram = async function () {
-        const mermaidElements = document.querySelectorAll('.mermaid');
+  // Detect effective theme (matches main.js logic)
+  function getEffectiveTheme() {
+    var dt = document.documentElement.getAttribute('data-theme');
+    if (dt === 'dark' || dt === 'light') return dt;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
 
-        mermaidElements.forEach(async (element, index) => {
-          const graphDefinition = element.textContent;
-          const svgId = `mermaid-rendered-svg-${index}`;
+  function getMermaidTheme() {
+    return getEffectiveTheme() === 'dark' ? 'dark' : 'default';
+  }
 
-          // Render the Mermaid diagram and get the SVG
-          const { svg } = await mermaid.render(svgId, graphDefinition);
+  // Store original mermaid source text per element (captured before first render)
+  const mermaidSources = [];
 
-          // Update the element's innerHTML with the rendered SVG
-          element.innerHTML = svg.replace(/[ ]*max-width:[ 0-9\.]*px;/i, '');
+  // Capture source text on first load (before any rendering)
+  document.querySelectorAll('.mermaid').forEach(function (el, index) {
+    mermaidSources[index] = el.textContent;
+  });
 
-          // Apply svg-pan-zoom to the rendered SVG with the specific ID
-          const panZoom = svgPanZoom(`#${svgId}`, {
+  // Re-render a diagram from its source text using the current mermaid
+  // config.  Returns the raw SVG string.  Used by copy-image and
+  // fullscreen so they always get a clean SVG with correct theme colors,
+  // free of svg-pan-zoom artifacts.
+  async function freshRender(index) {
+    var source = mermaidSources[index];
+    if (!source) throw new Error('No source for diagram ' + index);
+    // Re-initialize with current theme so the render always matches
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: getMermaidTheme(),
+      look: 'handDrawn',
+      handDrawnSeed: 42,
+      flowchart: { useMaxWidth: false, htmlLabels: true },
+      sequence: { useMaxWidth: false }
+    });
+    var tempId = 'mermaid-temp-' + index + '-' + Date.now();
+    var result = await mermaid.render(tempId, source);
+    return result.svg;
+  }
+
+  // SVG string -> PNG blob for the "Copy Image" button.
+  // Re-renders the diagram from source so the exported image captures the
+  // FULL diagram at its natural size, regardless of CSS constraints or
+  // svg-pan-zoom state.
+  async function svgToPngBlob(index) {
+    var svgString = await freshRender(index);
+
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(svgString, 'image/svg+xml');
+    var svg = doc.querySelector('svg');
+    if (!svg) throw new Error('No SVG in render result');
+
+    // Read natural dimensions from viewBox, then fall back to attributes
+    var vb = svg.getAttribute('viewBox');
+    var width = 800;
+    var height = 600;
+    if (vb) {
+      var parts = vb.split(/[\s,]+/);
+      width = parseFloat(parts[2]) || width;
+      height = parseFloat(parts[3]) || height;
+    } else {
+      width = parseFloat(svg.getAttribute('width')) || width;
+      height = parseFloat(svg.getAttribute('height')) || height;
+    }
+
+    // Force explicit dimensions and strip style constraints so the
+    // image renders at the diagram's natural size
+    svg.setAttribute('width', width);
+    svg.setAttribute('height', height);
+    svg.removeAttribute('style');
+
+    var serializer = new XMLSerializer();
+    var cleanSvg = serializer.serializeToString(svg);
+    var blob = new Blob([cleanSvg], { type: 'image/svg+xml;charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () {
+        var scale = 2;
+        var canvas = document.createElement('canvas');
+        canvas.width = width * scale;
+        canvas.height = height * scale;
+        var ctx = canvas.getContext('2d');
+        ctx.scale(scale, scale);
+        // Read actual background from an existing .mermaid element on the page
+        var bgColor = '#ffffff';
+        var refEl = document.querySelector('.mermaid');
+        if (refEl) {
+          bgColor = getComputedStyle(refEl).backgroundColor;
+        }
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(function (pngBlob) {
+          URL.revokeObjectURL(url);
+          resolve(pngBlob);
+        }, 'image/png');
+      };
+      img.onerror = function () {
+        URL.revokeObjectURL(url);
+        reject(new Error('SVG image load failed'));
+      };
+      img.src = url;
+    });
+  }
+
+  // Open fullscreen overlay by cloning the inline SVG.  This guarantees
+  // the fullscreen view is pixel-identical to what the user sees on the
+  // page (same theme colors, same rendering) because it IS the same SVG.
+  function openFullscreen(index) {
+    var mermaidEls = document.querySelectorAll('.mermaid');
+    var srcEl = mermaidEls[index];
+    if (!srcEl) return;
+    var inlineSvg = srcEl.querySelector('svg');
+    if (!inlineSvg) return;
+
+    // Clone the already-rendered inline SVG
+    var clonedSvg = inlineSvg.cloneNode(true);
+
+    // Remove svg-pan-zoom control icons from clone (avoid duplicates
+    // when we apply a fresh instance below)
+    clonedSvg.querySelectorAll('.svg-pan-zoom-control').forEach(function (c) {
+      c.parentNode.removeChild(c);
+    });
+
+    // Reset any svg-pan-zoom viewport transform so the diagram starts
+    // centered/fitted, not inheriting whatever pan/zoom the user had
+    var viewport = clonedSvg.querySelector('.svg-pan-zoom_viewport');
+    if (viewport) {
+      viewport.removeAttribute('transform');
+      viewport.style.transform = '';
+    }
+
+    // Assign unique ID for svg-pan-zoom selector.
+    // Mermaid embeds <style> rules scoped to the original SVG ID (e.g.
+    // #mermaid-rendered-svg-0 .messageText { fill: ... }).  We must
+    // update those references so the styles still apply after the ID change.
+    var oldId = clonedSvg.id;
+    var fsId = 'mermaid-fullscreen-svg-' + Date.now();
+    clonedSvg.id = fsId;
+    clonedSvg.querySelectorAll('style').forEach(function (styleEl) {
+      styleEl.textContent = styleEl.textContent.split(oldId).join(fsId);
+    });
+
+    // Remove CSS-constrained dimensions so the SVG fills the container
+    clonedSvg.removeAttribute('height');
+    clonedSvg.style.height = '100%';
+    clonedSvg.style.width = '100%';
+    clonedSvg.style.maxWidth = 'none';
+    clonedSvg.style.maxHeight = 'none';
+
+    var overlay = document.createElement('div');
+    overlay.className = 'mermaid-fullscreen-overlay';
+
+    // Match the background to the inline .mermaid container so diagram
+    // colors (arrows, text, lifelines) have correct contrast
+    overlay.style.backgroundColor = getComputedStyle(srcEl).backgroundColor;
+
+    var closeBtn = document.createElement('button');
+    closeBtn.className = 'mermaid-fullscreen-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.setAttribute('aria-label', 'Close fullscreen');
+
+    var container = document.createElement('div');
+    container.className = 'mermaid-fullscreen-content';
+    container.appendChild(clonedSvg);
+
+    overlay.appendChild(closeBtn);
+    overlay.appendChild(container);
+    document.body.appendChild(overlay);
+    document.body.style.overflow = 'hidden';
+
+    // Apply svg-pan-zoom to the fullscreen clone
+    var panZoom = svgPanZoom('#' + fsId, {
+      panEnabled: true,
+      zoomEnabled: true,
+      controlIconsEnabled: true,
+      zoomScaleSensitivity: 0.4,
+      fit: true,
+      center: true,
+      minZoom: 0.1,
+      maxZoom: 20
+    });
+
+    function closeOverlay() {
+      panZoom.destroy();
+      document.body.removeChild(overlay);
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onEsc);
+    }
+
+    function onEsc(e) {
+      if (e.key === 'Escape') closeOverlay();
+    }
+
+    closeBtn.addEventListener('click', closeOverlay);
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeOverlay();
+    });
+    document.addEventListener('keydown', onEsc);
+  }
+
+  // Wire up "Copy Image" and "Fullscreen" buttons after SVG is rendered.
+  // Uses the diagram index so handlers always re-render from source.
+  function wireToolbarButtons(wrapper, index) {
+    var copyImgBtn = wrapper.querySelector('.copy-img-btn');
+    if (copyImgBtn) {
+      copyImgBtn.style.display = '';
+      copyImgBtn.onclick = function () {
+        svgToPngBlob(index).then(function (blob) {
+          return navigator.clipboard.write([
+            new ClipboardItem({ 'image/png': blob })
+          ]);
+        }).then(function () {
+          copyImgBtn.textContent = 'Copied!';
+          copyImgBtn.classList.add('copied');
+          setTimeout(function () {
+            copyImgBtn.textContent = 'Copy Image';
+            copyImgBtn.classList.remove('copied');
+          }, 2000);
+        }).catch(function (err) {
+          console.error('Copy image failed:', err);
+          copyImgBtn.textContent = 'Failed';
+          setTimeout(function () {
+            copyImgBtn.textContent = 'Copy Image';
+          }, 2000);
+        });
+      };
+    }
+
+    var fullBtn = wrapper.querySelector('.fullscreen-btn');
+    if (fullBtn) {
+      fullBtn.style.display = '';
+      fullBtn.onclick = function () {
+        openFullscreen(index);
+      };
+    }
+  }
+
+  // Track svg-pan-zoom instances so we can destroy them before re-render
+  let panZoomInstances = [];
+
+  async function renderAllDiagrams() {
+    // Destroy existing svg-pan-zoom instances
+    panZoomInstances.forEach(function (pz) {
+      try { pz.destroy(); } catch (e) {}
+    });
+    panZoomInstances = [];
+
+    // Re-initialize mermaid with current theme
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: getMermaidTheme(),
+      look: 'handDrawn',
+      handDrawnSeed: 42,
+      flowchart: { useMaxWidth: false, htmlLabels: true },
+      sequence: { useMaxWidth: false }
+    });
+
+    var mermaidElements = document.querySelectorAll('.mermaid');
+
+    for (var i = 0; i < mermaidElements.length; i++) {
+      var element = mermaidElements[i];
+      var graphDefinition = mermaidSources[i] || element.textContent;
+      var svgId = 'mermaid-rendered-svg-' + i;
+
+      try {
+        var result = await mermaid.render(svgId, graphDefinition);
+        element.innerHTML = result.svg.replace(/[ ]*max-width:[ 0-9\.]*px;/i, '');
+
+        var svgEl = element.querySelector('svg');
+        if (svgEl) {
+          var panZoom = svgPanZoom('#' + svgId, {
             panEnabled: true,
             zoomEnabled: true,
             controlIconsEnabled: true,
@@ -31,9 +301,31 @@
             center: true,
             contain: true
           });
-        });
-      };
+          panZoomInstances.push(panZoom);
 
-      await drawDiagram();
+          // Wire up Copy Image and Fullscreen buttons
+          var wrapper = element.closest('.mermaid-wrapper') || element.parentElement;
+          wireToolbarButtons(wrapper, i);
+        }
+      } catch (err) {
+        console.error('Mermaid render error for diagram ' + i + ':', err);
+      }
+    }
+  }
+
+  // Initial render
+  await renderAllDiagrams();
+
+  // Re-render when theme changes (event dispatched by main.js toggle)
+  window.addEventListener('theme-changed', function () {
+    renderAllDiagrams();
+  });
+
+  // Also re-render if OS preference changes and we're in auto mode
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+    if (!document.documentElement.getAttribute('data-theme')) {
+      renderAllDiagrams();
+    }
+  });
 </script>
 {{ end }}
