@@ -1,3 +1,24 @@
+{{/* ==========================================================================
+   header.html -- HTML <head> partial
+   
+   Loaded by baseof.html (or directly in single/list templates).
+   Responsibilities:
+     - Page title (home vs. regular page)
+     - Favicon, viewport, RSS auto-discovery
+     - OpenGraph / Twitter Card meta (og:image, twitter:image)
+     - Google Fonts: IBM Plex Mono (code), Source Code Pro (body), Raleway (headings)
+     - CSS load order (matters for cascade!):
+         1. normalize.css  -- CSS reset
+         2. main.css       -- all light-mode base styles
+         3. syntax-light.css -- Chroma light syntax theme (always loaded)
+         4. custom-mermaid.css -- mermaid diagram overrides
+         5. [customCSS]    -- optional user CSS from hugo.toml params.customCSS
+         6. dark.css        -- dark mode (media="prefers-color-scheme: dark" in auto mode)
+         7. syntax-dark.css -- Chroma dark syntax theme
+         8. [customDarkCSS] -- optional user dark CSS from hugo.toml params.customDarkCSS
+     - JS: feather-icons (local or CDN), main.js (theme toggle, heading trail, copy buttons)
+     - Optional customJS from hugo.toml params.customJS (supports absolute URLs)
+   ========================================================================== */}}
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,7 +39,7 @@
   {{ printf `<link rel="%s" type="%s" href="%s" title="%s" />` .Rel .MediaType.Type .Permalink $.Site.Title | safeHTML }}
   {{ end -}}
   
-  <!-- the image config present in the -->
+  <!-- Social sharing images: per-page ogImage/twitterImage, falling back to site-wide featureImage -->
   {{ if .Params.ogImage }}
   <meta property="og:image" content="{{ .Params.ogImage }}">
   {{ else }}
@@ -43,14 +64,23 @@
   <!-- Ubuntu -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,300italic,400italic|Raleway:200,300">
 
+  <!-- CSS load order: normalize -> main -> syntax-light -> mermaid -> [customCSS] -> dark -> syntax-dark -> [customDarkCSS]
+       Order matters: dark.css must come after main.css to override light styles.
+       In "auto" mode, dark.css gets media="(prefers-color-scheme: dark)" so it
+       only applies when OS reports dark. In "dark" mode it loads unconditionally. -->
   <link rel="stylesheet" type="text/css" media="screen" href="{{ .Site.BaseURL }}css/normalize.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="{{ .Site.BaseURL }}css/main.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="{{ .Site.BaseURL }}css/syntax-light.css" />
   <link rel="stylesheet" type="text/css" media="screen" href="{{ .Site.BaseURL }}css/custom-mermaid.css" />
   {{- if isset .Site.Params "customcss" }}
   <link rel="stylesheet" type="text/css" href="{{ .Site.BaseURL }}{{ .Site.Params.customCSS }}" />
   {{ end }}
+  {{/* Dark mode CSS: loaded only when mode is "auto" or "dark" (set in hugo.toml params.mode).
+       In "auto" mode: dark.css gets media query so it only activates with OS dark preference.
+       syntax-dark.css is always loaded (it has its own internal @media / data-theme selectors). */}}
   {{- if or (eq .Site.Params.mode "auto") (eq .Site.Params.mode "dark") -}}
   <link rel="stylesheet" type="text/css" href="{{ .Site.BaseURL }}css/dark.css" {{ if eq .Site.Params.mode "auto" }}media="(prefers-color-scheme: dark)"{{ end }} />
+  <link rel="stylesheet" type="text/css" href="{{ .Site.BaseURL }}css/syntax-dark.css" />
   {{- if isset .Site.Params "customdarkcss" }}
   <link rel="stylesheet" type="text/css" href="{{ .Site.BaseURL }}{{ .Site.Params.customDarkCSS }}" {{ if eq .Site.Params.mode "auto" }}media="(prefers-color-scheme: dark)"{{ end }} />
   {{- end }}
