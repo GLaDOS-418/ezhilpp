@@ -1,3 +1,27 @@
+/* ==========================================================================
+   Dark Mode Styles -- Three-Tier Approach
+   ========================================================================== 
+   
+   This file is loaded via <link media="(prefers-color-scheme: dark)"> in
+   header.html, so the top-level rules only apply when the OS reports dark
+   mode. Three tiers handle dark/light switching:
+
+   1. OS-level (top of this file -- no wrapper)
+      Activated by `media="(prefers-color-scheme: dark)"` on the <link> tag.
+      Applies when user hasn't manually toggled the theme.
+
+   2. html[data-theme="dark"]  (manual dark)
+      Set by the JS theme toggle (main.js). Overrides OS preference to dark
+      regardless of the system setting.
+
+   3. html[data-theme="light"] (manual light)
+      Forces light even when OS is dark. Resets all dark-mode overrides.
+
+   The JS toggle cycles: auto -> dark -> light -> auto.
+   "auto" removes data-theme, falling back to tier 1 (OS preference).
+   
+   ========================================================================== */
+
 html {
 	background-color: #000;
 }
@@ -100,10 +124,6 @@ a:hover {
 	border-color: #333;
 }
 
-.highlight {
-	background-color: #333;
-}
-
 table th {
 	background-color: #333;
 }
@@ -138,6 +158,56 @@ code {
     color: #ddd;
 }
 
+.highlight {
+    border-color: #444;
+}
+
+.mermaid-wrapper {
+    border-color: #444;
+}
+
+.markdown img {
+    border-color: #444;
+}
+
+.code-toolbar {
+    background: #1a1a1a;
+    border-bottom-color: #444;
+}
+
+.copy-btn {
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.copy-btn.copied {
+    color: #50fa7b;
+    border-color: #50fa7b;
+}
+
+/* Mermaid dark background -- matches mermaid 'dark' theme */
+.mermaid {
+    background-color: #1a1a2e;
+}
+
+/* Fullscreen overlay dark mode -- background inherited from .mermaid class */
+
+.mermaid-fullscreen-close {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ccc;
+}
+
+.mermaid-fullscreen-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 /* Manual dark mode toggle override: applied when user explicitly selects dark */
 html[data-theme="dark"] { background-color: #000; }
 html[data-theme="dark"] body { color: #ddd; background-color: #000; }
@@ -169,7 +239,6 @@ html[data-theme="dark"] .tag-cloud .tag-count { color: #777; }
 html[data-theme="dark"] .site-title a { color: #ddd; text-decoration: none !important; }
 html[data-theme="dark"] .header nav,
 html[data-theme="dark"] .footer { border-color: #333; }
-html[data-theme="dark"] .highlight { background-color: #333; }
 html[data-theme="dark"] table th { background-color: #333; }
 html[data-theme="dark"] table th,
 html[data-theme="dark"] table td { padding: 10px 20px; border: 1px solid #666; }
@@ -180,6 +249,17 @@ html[data-theme="dark"] table td code { background: #3A3A3A; }
 html[data-theme="dark"] .view-all { color: #777; }
 html[data-theme="dark"] .view-all:hover { color: #ff7979; }
 html[data-theme="dark"] .dark-mode-toggle { color: #ddd; }
+html[data-theme="dark"] .highlight { border-color: #444; }
+html[data-theme="dark"] .mermaid-wrapper { border-color: #444; }
+html[data-theme="dark"] .markdown img { border-color: #444; }
+html[data-theme="dark"] .code-toolbar { background: #1a1a1a; border-bottom-color: #444; }
+html[data-theme="dark"] .copy-btn { border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.1); color: #ccc; }
+html[data-theme="dark"] .copy-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
+html[data-theme="dark"] .copy-btn.copied { color: #50fa7b; border-color: #50fa7b; }
+html[data-theme="dark"] .mermaid { background-color: #1a1a2e; }
+/* .mermaid-fullscreen-overlay background inherited from .mermaid class */
+html[data-theme="dark"] .mermaid-fullscreen-close { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.25); color: #ccc; }
+html[data-theme="dark"] .mermaid-fullscreen-close:hover { background: rgba(255, 255, 255, 0.2); }
 
 /* Manual light mode override: force light when user explicitly selects light, even if OS is dark */
 html[data-theme="light"] { background-color: #fff; }
@@ -203,7 +283,6 @@ html[data-theme="light"] .site-description a,
 html[data-theme="light"] .site-description a:hover { color: #333; }
 html[data-theme="light"] .header nav,
 html[data-theme="light"] .footer { border-color: #f4f4f4; }
-html[data-theme="light"] .highlight { background-color: #FAFAFA; }
 html[data-theme="light"] table th { background-color: #f4f4f4; }
 html[data-theme="light"] table th,
 html[data-theme="light"] table td { border: 1px solid #dddddd; }
@@ -221,6 +300,14 @@ html[data-theme="light"] .post-tags .tags a { border: 1px solid #a00; color: #a0
 html[data-theme="light"] .tag-cloud a { border-color: #a00; color: #a00; }
 html[data-theme="light"] .tag-cloud a:hover { background-color: #a00; color: #fff; }
 html[data-theme="light"] .tag-cloud .tag-count { color: #999; }
-html[data-theme="light"] .tag-cloud a { border-color: #a00; color: #a00; }
-html[data-theme="light"] .tag-cloud a:hover { background-color: #a00; color: #fff; }
-html[data-theme="light"] .tag-cloud .tag-count { color: #999; }
+html[data-theme="light"] .highlight { border-color: #ddd; }
+html[data-theme="light"] .mermaid-wrapper { border-color: #ddd; }
+html[data-theme="light"] .markdown img { border-color: #ddd; }
+html[data-theme="light"] .code-toolbar { background: #f5f5f5; border-bottom-color: #ddd; }
+html[data-theme="light"] .copy-btn { border-color: rgba(0, 0, 0, 0.2); background: rgba(0, 0, 0, 0.06); color: #555; }
+html[data-theme="light"] .copy-btn:hover { background: rgba(0, 0, 0, 0.12); color: #222; }
+html[data-theme="light"] .copy-btn.copied { color: #116329; border-color: #116329; }
+html[data-theme="light"] .mermaid { background-color: #fff; }
+/* .mermaid-fullscreen-overlay background inherited from .mermaid class */
+html[data-theme="light"] .mermaid-fullscreen-close { background: rgba(0, 0, 0, 0.08); border-color: rgba(0, 0, 0, 0.2); color: #333; }
+html[data-theme="light"] .mermaid-fullscreen-close:hover { background: rgba(0, 0, 0, 0.15); }
