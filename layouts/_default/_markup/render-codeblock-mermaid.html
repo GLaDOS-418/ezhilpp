@@ -1,4 +1,14 @@
+{{/* ==========================================================================
+   render-codeblock-mermaid.html -- Mermaid code block render hook
+   
+   Hugo calls this for ```mermaid fenced code blocks. Wraps content in
+   .mermaid-wrapper (for border styling + toolbar) > pre.mermaid (for
+   Mermaid.js to find and render). Sets hasMermaid flag so mermaid.html
+   partial is included at page bottom.
+   ========================================================================== */}}
+<div class="mermaid-wrapper">
 <pre class="mermaid">
   {{- .Inner | safeHTML }}
 </pre>
+</div>
 {{ .Page.Store.Set "hasMermaid" true }}
