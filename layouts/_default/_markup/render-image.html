@@ -1,1 +1,3 @@
+{{/* render-image.html -- Image render hook. Prepends "/" to make paths
+   absolute from site root (required for Hugo's URL handling). */}}
 <img src="/{{ .Destination | safeURL }}" alt="{{ .Text }}" {{ with .Title }} title="{{ . }}"{{ end }} />

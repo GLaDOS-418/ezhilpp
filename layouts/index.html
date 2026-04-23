@@ -1,3 +1,12 @@
+{{/* ==========================================================================
+   index.html -- Homepage layout
+   
+   Two sections:
+   1. Recent Posts: paginated list from params.mainSections, excludes posts
+      with hidden=true in front matter. Uses Hugo's .Paginate for pagination.
+   2. Recent Logs: shows last N logs (params.logsOnHomepage, default 5)
+      with a "view all ->" link to /logs/.
+   ========================================================================== */}}
 <!DOCTYPE html>
 <html>
 {{ partial "header.html" . }}

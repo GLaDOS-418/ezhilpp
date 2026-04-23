@@ -1,3 +1,15 @@
+{{/* ==========================================================================
+   giscus.html -- Giscus (GitHub Discussions) comment widget
+   
+   Theme resolution priority:
+   1. params.giscus.customTheme -- a CSS filename served from /css/ (e.g. "giscus.css")
+      This builds a full URL like https://yoursite.com/css/giscus.css
+   2. params.giscus.theme -- a built-in Giscus theme name (e.g. "dark", "light")
+   3. Falls back to "dark" if neither is set
+   
+   All other giscus data attributes come from params.giscus in hugo.toml.
+   See: https://giscus.app for configuration options.
+   ========================================================================== */}}
 {{- $.Scratch.Set "theme" "" -}}
 
 {{- if .Site.Params.giscus.customTheme -}}

@@ -1,3 +1,10 @@
+{{/* ==========================================================================
+   list.html -- List/taxonomy page layout
+   
+   Used for section pages (/posts/, /logs/) and taxonomy term pages (/tags/X/).
+   If it's a taxonomy term page, shows "Entries tagged - X".
+   Filters out content types listed in params.excludedTypes (default: ["page"]).
+   ========================================================================== */}}
 <!DOCTYPE html>
 <html>
 {{ partial "header.html" . }}

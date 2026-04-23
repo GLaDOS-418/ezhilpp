@@ -1,3 +1,13 @@
+{{/* ==========================================================================
+   head.html -- Site header (visible header bar, not <head>)
+   
+   Contains: site title, subtitle (from params.subtitle, supports markdown),
+   social icon links (from params.social -- uses feather-icons), main nav menu
+   (from menu.main in hugo.toml), and dark mode toggle button.
+   
+   The dark mode toggle only renders when params.mode is "auto" or "dark".
+   Icon starts as "moon" -- JS in main.js updates it based on effective theme.
+   ========================================================================== */}}
 <div class="header">
   <!-- <base href="{{ .Site.BaseURL }}"> -->
   <h1 class="site-title"><a href="{{ .Site.BaseURL }}">{{ .Site.Title }}</a></h1>

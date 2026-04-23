@@ -1,3 +1,14 @@
+{{/* ==========================================================================
+   comments.html -- Comment system dispatcher
+   
+   Decides which comment system to render (Disqus or Giscus) based on:
+   1. Per-page front matter: commentsApp="disqus" or default to giscus
+   2. Per-page comments=true/false to enable/disable entirely
+   3. params.disableCommentsTypes to disable by content type
+   4. Disqus requires a shortname in services.disqus config
+   
+   Uses Hugo's Scratch to track state across conditional blocks.
+   ========================================================================== */}}
 {{- $.Scratch.Set "isComments" true -}}
 {{- $.Scratch.Set "isDisqus" true -}}
 {{- $.Scratch.Set "isGiscus" true -}}
