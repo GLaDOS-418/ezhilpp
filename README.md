@@ -17,14 +17,16 @@ Clean and minimal personal blog and portfolio theme for Hugo. Forked from [Ezhil
 * Supports tags (with bordered pills and post count)
 * Social media links
 * Google Analytics integration
-* Syntax highlighting
+* Syntax highlighting (Chroma, class-based for light/dark theme switching)
 * Twitter cards and opengraph tags support
 * Disqus and Giscus comments
 * Hugo RSS feeds
 * Custom CSS/JS
 * Social media sharing buttons
 * Default `og:image` and `twitter:image` values
-* MermaidJS diagram support with pan-and-zoom
+* MermaidJS diagram support with pan-and-zoom and **hand-drawn sketch style**
+* **Dashed borders** around code blocks, mermaid diagrams, and images
+* **Toolbar copy buttons** on code blocks and mermaid diagrams
 * **Logs section** - separate content type for short-form posts (TIL, notes, etc.)
 * **Reading time** display on posts and logs
 * **Last updated date** shown when content has been modified
@@ -236,8 +238,80 @@ socialshare: true
 - header 2
 ```
 
+## Syntax Highlighting
+
+Hugo uses [Chroma](https://github.com/alecthomas/chroma) for server-side syntax highlighting. This theme uses **class-based** highlighting (`noClasses = false`) so that light/dark themes can be toggled via CSS.
+
+### Configuration
+
+```toml
+[markup.highlight]
+  codeFences = true     # Enable fenced code blocks
+  guessSyntax = true    # Auto-detect language
+  noClasses = false     # Use CSS classes (required for theme switching)
+```
+
+> **Note:** Changing `noClasses` requires a full Hugo server restart.
+
+### Highlighting Options
+
+Use Hugo's [highlight processing instruction](https://gohugo.io/content-management/syntax-highlighting/#highlight-processing-instruction) in fenced code blocks:
+
+````markdown
+```go {linenos=true, hl_lines=["3-5", 8], linenostart=10}
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello")
+    fmt.Println("World")
+    fmt.Println("!")
+}
+```
+````
+
+Available options:
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `linenos` | Show line numbers | `linenos=true` |
+| `linenostart` | Starting line number | `linenostart=42` |
+| `hl_lines` | Highlight specific lines (relative to block, not linenostart) | `hl_lines=["2-4", 7]` |
+| `lineanchors` | Add anchor IDs to each line for linking | `lineanchors=mycode` |
+| `anchorlinenos` | Make line numbers clickable anchors (requires `lineanchors`) | `anchorlinenos=true` |
+| `hl_inline` | Inline highlighting (no block wrapper) | `hl_inline=true` |
+
+You can also use the `highlight` shortcode for more control:
+
+```markdown
+{{</* highlight python "linenos=table, hl_lines=2" */>}}
+def hello():
+    print("highlighted line")
+    return True
+{{</* /highlight */>}}
+```
+
+### Changing Syntax Themes
+
+Generate new theme CSS with:
+
+```sh
+# Light theme
+hugo gen chromastyles --style=modus-operandi > static/css/syntax-light.css
+
+# Dark theme (wrap output in @media and data-theme selectors — see existing file)
+hugo gen chromastyles --style=onedark > /tmp/dark-tokens.css
+```
+
+Browse all available themes: https://xyproto.github.io/splash/docs/all.html
+
+### Visual Enhancements
+
+Code blocks are wrapped in a **dashed border** with a **toolbar strip** at the top containing a copy-to-clipboard button. These styles adapt to dark mode automatically.
+
 ## SVG diagrams using MermaidJS
-draw SVG diagrams using [MermaidJS]( https://mermaid.js.org/). Theme used is *'forest'*.
+draw SVG diagrams using [MermaidJS]( https://mermaid.js.org/) v11. Theme used is *'forest'* with a **hand-drawn sketch style** (`look: 'handDrawn'`) for a more organic, Excalidraw-like appearance. A fixed seed (`handDrawnSeed: 42`) ensures diagrams render consistently across page loads.
 You can draw as many diagram as possible.
 
 Pan-and-Zoom of these diagrams is enabled via [bumbu/svg-pan-zoom]( https://github.com/bumbu/svg-pan-zoom ),
